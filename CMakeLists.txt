@@ -223,11 +223,11 @@ set (SYSREPOCTL_SRC
 set (SYSREPOCFG_SRC
     src/executables/sysrepocfg.c)
 
-set (SYSREPOPLUGIND_SRC
+set (LIBSYSREPOPLUGIND_SRC
     src/executables/srpd_rotation.c
     src/executables/srpd_oper_poll_diff.c
     src/executables/srpd_common.c
-    src/executables/sysrepo-plugind.c)
+    src/executables/sysrepo-plugind-startup.c)
 
 # public headers to check API/ABI on
 set(LIB_HEADERS
@@ -340,8 +340,10 @@ add_executable(sysrepocfg ${SYSREPOCFG_SRC} ${compatsrc})
 target_link_libraries(sysrepocfg sysrepo)
 
 # sysrepo-plugind daemon
-add_executable(sysrepo-plugind ${SYSREPOPLUGIND_SRC} ${compatsrc})
-target_link_libraries(sysrepo-plugind sysrepo)
+add_library(srpd-startup SHARED ${LIBSYSREPOPLUGIND_SRC} ${compatsrc})
+target_link_libraries(srpd-startup sysrepo)
+add_executable(sysrepo-plugind src/executables/sysrepo-plugind.c)
+target_link_libraries(sysrepo-plugind sysrepo srpd-startup)
 
 # include repository files with highest priority
 include_directories("${PROJECT_SOURCE_DIR}/src")
@@ -426,6 +428,8 @@ install(FILES ${PROJECT_SOURCE_DIR}/src/plugins_datastore.h ${PROJECT_BINARY_DIR
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/sysrepo)
 install(FILES ${PROJECT_BINARY_DIR}/sysrepo.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
 
+install(TARGETS srpd-startup DESTINATION ${CMAKE_INSTALL_LIBDIR})
+install(FILES ${PROJECT_SOURCE_DIR}/src/executables/sysrepo-plugind-startup.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install(TARGETS sysrepoctl sysrepocfg sysrepo-plugind DESTINATION ${CMAKE_INSTALL_BINDIR})
 install(FILES ${PROJECT_SOURCE_DIR}/src/executables/sysrepoctl.1 ${PROJECT_SOURCE_DIR}/src/executables/sysrepocfg.1
         DESTINATION ${CMAKE_INSTALL_MANDIR}/man1)
