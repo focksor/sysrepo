@@ -560,9 +560,10 @@ cleanup:
 }
 
 int srpd_startup(srpd_opts_t *opts, struct srpd_plugin_s *plugins, int plugin_count,
-                 sr_conn_ctx_t *conn, sr_session_ctx_t **using_sess,
+                 sr_conn_ctx_t **using_conn, sr_session_ctx_t **using_sess,
                  bool send_sd_ready, bool occupy_this_thread)
 {
+    sr_conn_ctx_t *conn = NULL;
     sr_session_ctx_t *sess = NULL;
     sr_log_level_t log_level = opts->log_level;
     int i, r, rc = EXIT_FAILURE, debug = 0, pidfd = -1, fatal_fail = 0;
@@ -595,6 +596,9 @@ int srpd_startup(srpd_opts_t *opts, struct srpd_plugin_s *plugins, int plugin_co
             error_print(r, "Failed to connect");
             goto cleanup;
         }
+    }
+    if (using_conn) {
+        *using_conn = conn;
     }
 
     /* create session */
